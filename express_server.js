@@ -42,6 +42,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+//Create new short url after receiving it from the new url page.
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   let newID = generateRandomString()
@@ -51,6 +52,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`urls/${newID}`);
 });
 
+//User only receives the page for specific url, is linked from the edit file
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
@@ -67,6 +69,18 @@ app.post("/urls/:id/delete",(req, res) => {
   res.redirect("/urls");
 
 })
+
+//update urls after receiving Submit from the show url page.
+app.post("/urls/:id", (req, res) => {
+  console.log("req body is ",req.body, "req parameter is ", req.params);
+  //console.log(req.params);
+  console.log(urlDatabase);
+  urlDatabase[req.params.id] = req.body.longURL;
+  console.log(urlDatabase);
+
+  res.redirect("/urls");
+});
+
 
 app.listen(PORT, ()=> {
   console.log(`Example app listening on port ${PORT}!`);
