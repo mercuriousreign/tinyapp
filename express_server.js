@@ -81,6 +81,12 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+//Directs from the login button, creates value for username
+app.post("/login",(req,res) => {
+  console.log(req.body.username);
+  res.cookie("user",req.body.username);
+  res.redirect("/urls");
+})
 
 app.listen(PORT, ()=> {
   console.log(`Example app listening on port ${PORT}!`);
