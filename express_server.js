@@ -1,10 +1,12 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
 
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 function generateRandomString() {
   let result = [];
@@ -34,7 +36,12 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req,res)=> {
-  const templateVars = {urls:urlDatabase};
+  let templateVars = {urls:urlDatabase};
+  console.log(req.cookies);
+  if ('username' in req.cookies) {
+    console.log("username found");
+    templateVars = {urls:urlDatabase, username :req.cookies["username"]};
+  }
   res.render("urls_index",templateVars);
 });
 
@@ -54,7 +61,7 @@ app.post("/urls", (req, res) => {
 
 //User only receives the page for specific url, is linked from the edit file
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 
@@ -85,7 +92,7 @@ app.post("/urls/:id", (req, res) => {
 //Directs from the login button, creates value for username
 app.post("/login",(req,res) => {
   console.log(req.body.username);
-  res.cookie("user",req.body.username);
+  res.cookie("username",req.body.username);
   res.redirect("/urls");
 })
 

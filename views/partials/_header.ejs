@@ -16,6 +16,8 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <% if (!Object.keys(this).includes("username")) { %>
+         <% console.log(Object.keys(this)) %>
         <form class="form-inline" action="/login" method="POST">
           <input
             class="form-control"
@@ -26,6 +28,9 @@
           />
           <button type="submit" class="btn btn-primary">Login</button>
         </form>
+        <% } else { %>
+        <h4>`logged in as ${<%= username %>}`</h4>
+      <% } %>
       </div>
     </div>
   </nav>
