@@ -16,8 +16,8 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <% if (!username) { %>
-         <% console.log("testing finding",username) %>
+        <% if (typeof username == 'undefined') { %>
+         <% console.log("testing finding") %>
         <form class="form-inline" action="/login" method="POST">
           <input
             class="form-control"
@@ -29,7 +29,10 @@
           <button type="submit" class="btn btn-primary">Login</button>
         </form>
         <% } else { %>
-        <h5>"logged in as <%= username %>"</h5>
+        <form class="form-inline" action="/logout" method="POST">
+        <h5 name="logged">"logged in as <%= username %>"</h5>
+        <button type="submit" class="btn btn-primary">Logout</button>
+      </form>
       <% } %>
       </div>
     </div>
