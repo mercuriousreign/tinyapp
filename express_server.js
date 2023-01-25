@@ -63,6 +63,7 @@ app.get("/u/:id",(req, res) => {
   res.redirect(longURL);
 });
 
+// Directs from url page's delete button, deletes entry
 app.post("/urls/:id/delete",(req, res) => {
   const urlId = req.params.id;
   delete urlDatabase[urlId];
