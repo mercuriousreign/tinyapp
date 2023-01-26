@@ -85,8 +85,7 @@ app.post("/register",(req,res) => {
     return res.status(400).send("Empty Input, Discontinued registration");
   }
   if (getUserByEmail(req.body.email) !== null) {
-    //res.status(400).send("email already exists").end();
-    return res.status(400).send("Email already exists");
+    return res.status(400).send("Email already exists").redirect("/urls");
   }
 
   let newID = generateRandomString();
@@ -141,27 +140,51 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+
+//Directed from header login button.
+app.get("/login", (req,res)=> {
+  let templateVars = {urls:urlDatabase,userslist : users};
+  console.log(req.cookies);
+  if ('user_id' in req.cookies) {
+    console.log("user_id found");
+    templateVars = {urls:urlDatabase, user_id : req.cookies["user_id"], userslist : users};
+    res.render("user_login",templateVars);
+  } else {
+    res.render("user_login",templateVars);
+  }
+});
+
+
+
 //Directs from the login button, creates value for user_id (before it was username)
 app.post("/login",(req,res) => {
   //console.log(req.body.username);
-  let checkUser = req.body.useremail
+  let checkUser = getUserByEmail(req.body.useremail)
   let checkPass = req.body.password
 
-  for (let usr in users) {
-    if (users[usr].useremail === checkUser && users[usr].password === checkPass) {
-      res.cookie("user_id",users);
-      res.redirect("/urls");
-    }
+
+  // for (let usr in users) {
+  //   if (users[usr].useremail === checkUser && users[usr].password === checkPass) {
+  //     console.log("not get error")
+
+  //   }
+  if (checkUser !== null && checkUser.password === checkPass) {
+    res.cookie("user_id",users[usr].id);
+    res.redirect("/urls");
   }
 
-  res.status("error").redirect("/urls");
+
+  
+
+  console.log("get error")
+  return res.status("error").redirect("/urls");
   
 })
 
 app.post("/logout",(req,res) => {
   //console.log("logoutbody is",req.params);
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 })
 
 app.listen(PORT, ()=> {
