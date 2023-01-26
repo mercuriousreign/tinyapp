@@ -69,11 +69,19 @@ app.get("/urls", (req,res)=> {
 });
 
 app.get("/urls/new", (req, res) => {
+  if (!'user_id'in req.cookies) {
+    res.redirect("/login");
+  }
   res.render("urls_new");
 });
 
 app.get("/register",(req,res) =>{
-  res.render("create_user")
+  if ('user_id' in req.cookies) {
+    return res.redirect("/urls");
+  } else {
+    res.render("create_user")
+  }
+  
 })
 
 //Redirects from createuser submit button, creates new user
@@ -102,6 +110,9 @@ app.post("/register",(req,res) => {
 
 //Create new short url after receiving it from the new url page.
 app.post("/urls", (req, res) => {
+  if (!'user_id' in req.cookies) {
+    res.send("Please login to shorten url");
+  }
   console.log(req.body); // Log the POST request body to the console
   let newShort = generateRandomString()
   urlDatabase[newShort] = req.body.longURL;
@@ -117,6 +128,9 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:id",(req, res) => {
+  if (!Object.keys(urlDatabase).includes(req.params.id)){
+    res.send(`${req.params.id} does not exists`);
+  }
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
@@ -149,6 +163,7 @@ app.get("/login", (req,res)=> {
     console.log("user_id found");
     templateVars = {urls:urlDatabase, user_id : req.cookies["user_id"], userslist : users};
     res.render("user_login",templateVars);
+    res.redirect("/urls");
   } else {
     res.render("user_login",templateVars);
   }
