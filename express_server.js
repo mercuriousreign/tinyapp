@@ -23,6 +23,10 @@ const urlDatabase = {
   "9sm5xK" : "http://www.google.com"
 }
 
+const userDatabase = {
+  0 : { useremail : "admin@urlsapp.com" , password : "1234"}
+}
+
 app.get("/", (req,res) => {
   res.send("Hello!");
 });
@@ -48,6 +52,15 @@ app.get("/urls", (req,res)=> {
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
+
+app.get("/register",(req,res) =>{
+  res.render("create_user")
+})
+
+app.post("/register",(req,res) => {
+  console.log(req.body);
+  userDatabase[userDatabase.length] = {useremail : req.body.useremail , password : req.body.password}
+})
 
 //Create new short url after receiving it from the new url page.
 app.post("/urls", (req, res) => {
