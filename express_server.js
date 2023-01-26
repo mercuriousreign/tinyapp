@@ -159,25 +159,28 @@ app.get("/login", (req,res)=> {
 //Directs from the login button, creates value for user_id (before it was username)
 app.post("/login",(req,res) => {
   //console.log(req.body.username);
-  let checkUser = getUserByEmail(req.body.useremail)
-  let checkPass = req.body.password
-
-
   // for (let usr in users) {
   //   if (users[usr].useremail === checkUser && users[usr].password === checkPass) {
   //     console.log("not get error")
 
   //   }
-  if (checkUser !== null && checkUser.password === checkPass) {
-    res.cookie("user_id",users[usr].id);
-    res.redirect("/urls");
-  }
-
-
+  let checkUser = getUserByEmail(req.body.email)
   
+  console.log("user info is",checkUser)
+  if (checkUser === null){
+    return res.status(403).send("The following email is not registered");
+  } 
+  let checkPass = req.body.password
+  console.log("pass info is ",checkPass);
+  if (checkUser !== null && checkUser.password !== checkPass) {
+    return res.status(403).send("Password does not match");
+  }
+    res.cookie("user_id",checkUser.id);
+    res.redirect("/urls");
 
-  console.log("get error")
-  return res.status("error").redirect("/urls");
+
+  // console.log("get error")
+  // return res.status("error").redirect("/urls");
   
 })
 
