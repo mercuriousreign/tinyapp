@@ -16,21 +16,22 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <% if (typeof username == 'undefined') { %>
-         <% console.log("testing finding") %>
+        <% if (typeof user_id == 'undefined') { %>
+         <% console.log("testing finding ") %>
         <form class="form-inline" action="/login" method="POST">
           <input
             class="form-control"
             type="text"
-            name="username"
-            placeholder="Username"
+            name="useremail"
+            placeholder="useremail"
             style="width: 300px; margin: 1em"
           />
           <button type="submit" class="btn btn-primary">Login</button>
         </form>
         <% } else { %>
+          <% console.log("testing finding in else", userslist , user_id) %>
         <form class="form-inline" action="/logout" method="POST">
-        <h5 name="logged">"logged in as <%= username %>"</h5>
+        <h5 name="logged">"logged in as <%= userslist[user_id].email %>"</h5>
         <button type="submit" class="btn btn-primary">Logout</button>
       </form>
       <% } %>

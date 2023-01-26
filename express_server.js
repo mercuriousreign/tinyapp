@@ -27,6 +27,13 @@ const userDatabase = {
   0 : { useremail : "admin@urlsapp.com" , password : "1234"}
 }
 
+const users = {
+  userRandomID : {
+    id:"userrandomid",
+    email:"user@email.com",
+    password:"remotebranch"}
+}
+
 app.get("/", (req,res) => {
   res.send("Hello!");
 });
@@ -40,13 +47,16 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req,res)=> {
-  let templateVars = {urls:urlDatabase};
+  let templateVars = {urls:urlDatabase,userslist : users};
   console.log(req.cookies);
-  if ('username' in req.cookies) {
-    console.log("username found");
-    templateVars = {urls:urlDatabase, username :req.cookies["username"]};
+  if ('user_id' in req.cookies) {
+    console.log("user_id found");
+    templateVars = {urls:urlDatabase, user_id : req.cookies["user_id"], userslist : users};
+    res.render("urls_index",templateVars);
+  } else {
+    res.render("urls_index",templateVars);
   }
-  res.render("urls_index",templateVars);
+  
 });
 
 app.get("/urls/new", (req, res) => {
@@ -57,24 +67,35 @@ app.get("/register",(req,res) =>{
   res.render("create_user")
 })
 
+//Redirects from createuser submit button, creates new user
 app.post("/register",(req,res) => {
-  console.log(req.body);
-  userDatabase[userDatabase.length] = {useremail : req.body.useremail , password : req.body.password}
+  //console.log(req.body);
+  //userDatabase[userDatabase.length] = {useremail : req.body.useremail , password : req.body.password}
+  let newID = generateRandomString();
+  users[newID] = {
+    id: newID, 
+    email : req.body.email,
+    password : req.body.password
+  }
+    //console.log(users);
+    //New registered person is logged in?
+    res.cookie("user_id", newID);
+    res.redirect("/urls")
 })
 
 //Create new short url after receiving it from the new url page.
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  let newID = generateRandomString()
-  urlDatabase[newID] = req.body.longURL;
+  let newShort = generateRandomString()
+  urlDatabase[newShort] = req.body.longURL;
   console.log(urlDatabase);
   //res.send("Ok"); // Respond with 'Ok' (we will replace this)
-  res.redirect(`urls/${newID}`);
+  res.redirect(`urls/${newShort}`);
 });
 
 //User only receives the page for specific url, is linked from the edit file
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user_id: req.cookies["user_id"] , userslist : users };
   res.render("urls_show", templateVars);
 });
 
@@ -102,16 +123,26 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
-//Directs from the login button, creates value for username
+//Directs from the login button, creates value for user_id (before it was username)
 app.post("/login",(req,res) => {
-  console.log(req.body.username);
-  res.cookie("username",req.body.username);
-  res.redirect("/urls");
+  //console.log(req.body.username);
+  let checkUser = req.body.useremail
+  let checkPass = req.body.password
+
+  for (let usr in users) {
+    if (users[usr].useremail === checkUser && users[usr].password === checkPass) {
+      res.cookie("user_id",users);
+      res.redirect("/urls");
+    }
+  }
+
+  res.status("error").redirect("/urls");
+  
 })
 
 app.post("/logout",(req,res) => {
   //console.log("logoutbody is",req.params);
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 })
 
