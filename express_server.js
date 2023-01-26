@@ -34,6 +34,15 @@ const users = {
     password:"remotebranch"}
 }
 
+function getUserByEmail(checkEmail){
+  for (let usr in users) {
+    if (users[usr].email === checkEmail) {
+      return users[usr];
+    }
+  }
+  return null;
+}
+
 app.get("/", (req,res) => {
   res.send("Hello!");
 });
@@ -69,8 +78,17 @@ app.get("/register",(req,res) =>{
 
 //Redirects from createuser submit button, creates new user
 app.post("/register",(req,res) => {
-  //console.log(req.body);
+  console.log(req.body);
   //userDatabase[userDatabase.length] = {useremail : req.body.useremail , password : req.body.password}
+  //if inputs are empty
+  if (req.body.email === "" || req.body.password === ""){
+    return res.status(400).send("Empty Input, Discontinued registration");
+  }
+  if (getUserByEmail(req.body.email) !== null) {
+    //res.status(400).send("email already exists").end();
+    return res.status(400).send("Email already exists");
+  }
+
   let newID = generateRandomString();
   users[newID] = {
     id: newID, 
