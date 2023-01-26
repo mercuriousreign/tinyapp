@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs")
 const app = express();
 const PORT = 8080;
 
@@ -111,6 +112,7 @@ app.get("/register",(req,res) =>{
   
 })
 
+//NEW USER GENERATOR*****/
 //Redirects from createuser submit button, creates new user
 app.post("/register",(req,res) => {
   console.log(req.body);
@@ -127,7 +129,7 @@ app.post("/register",(req,res) => {
   users[newID] = {
     id: newID, 
     email : req.body.email,
-    password : req.body.password
+    password : bcrypt.hashSync(req.body.password,10)
   }
     //console.log(users);
     //New registered person is logged in?
@@ -135,6 +137,7 @@ app.post("/register",(req,res) => {
     res.redirect("/urls")
 })
 
+//NEW URL GENERATION *////
 //Create new short url after receiving it from the new url page.
 app.post("/urls", (req, res) => {
   if (!'user_id' in req.cookies) {
@@ -219,6 +222,7 @@ app.post("/urls/:id", (req, res) => {
 app.get("/login", (req,res)=> {
   let templateVars = {urls:urlDatabase,userslist : users};
   console.log(req.cookies);
+  //turns back user if they are already logged in
   if ('user_id' in req.cookies) {
     console.log("user_id found");
     templateVars = {urls:urlDatabase, user_id : req.cookies["user_id"], userslist : users};
@@ -233,29 +237,21 @@ app.get("/login", (req,res)=> {
 
 //Directs from the login button, creates value for user_id (before it was username)
 app.post("/login",(req,res) => {
-  //console.log(req.body.username);
-  // for (let usr in users) {
-  //   if (users[usr].useremail === checkUser && users[usr].password === checkPass) {
-  //     console.log("not get error")
 
-  //   }
   let checkUser = getUserByEmail(req.body.email)
   
   console.log("user info is",checkUser)
   if (checkUser === null){
     return res.status(403).send("The following email is not registered");
   } 
-  let checkPass = req.body.password
-  console.log("pass info is ",checkPass);
-  if (checkUser !== null && checkUser.password !== checkPass) {
+  let inputPass = req.body.password
+  console.log("pass info is ",inputPass);
+  if (checkUser !== null && !bcrypt.compareSync(inputPass,checkUser.password)) {
     return res.status(403).send("Password does not match");
   }
     res.cookie("user_id",checkUser.id);
     res.redirect("/urls");
 
-
-  // console.log("get error")
-  // return res.status("error").redirect("/urls");
   
 })
 
