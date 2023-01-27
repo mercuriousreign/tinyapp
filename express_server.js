@@ -2,6 +2,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const {urlDatabase,users} = require('./db');
+const {generateRandomString,getUserByEmail,urlsForUser} = require('./helper')
 const bcrypt = require("bcryptjs")
 const app = express();
 const PORT = 8080;
@@ -15,44 +16,6 @@ app.use(cookieSession({
   keys: ['user_id', 'key2']
 }))
 
-
-// const urlDatabase = {
-//   "b2xVn2" : "http://www.lighthouselabs.ca",
-//   "9sm5xK" : "http://www.google.com"
-// }
-
-
-
-function getUserByEmail(checkEmail){
-  for (let usr in users) {
-    if (users[usr].email === checkEmail) {
-      return users[usr];
-    }
-  }
-  return null;
-}
-
-
-function generateRandomString() {
-  let result = [];
-  let charas = "abcdefghijklmnopqrstuvwxyz0123456789"
-  for (let i = 0 ; i < 6; i++) {
-    let rand = Math.floor(Math.random() * (charas.length - 1) + 1);
-    result.push(charas[rand]);
-  }
-  return result.join('');
-}
-
-function urlsForUser(id) {
-  let result = {}
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      result[url] = urlDatabase[url]
-      //Object.assign(result,urlDatabase[url]);
-    }
-  }
-  return result;
-}
 
 app.get("/", (req,res) => {
   res.send("Hello!");
@@ -72,8 +35,8 @@ app.get("/urls", (req,res)=> {
   let loggedUserID = req.session.user_id
   if (req.session.user_id !== undefined) {
     console.log("user_id found");
-    console.log(urlsForUser(loggedUserID))
-    templateVars = {urls:urlsForUser(loggedUserID), user_id : req.session["user_id"], userslist : users};
+    console.log(urlsForUser(loggedUserID,urlDatabase))
+    templateVars = {urls:urlsForUser(loggedUserID,urlDatabase), user_id : req.session["user_id"], userslist : users};
     res.render("urls_index",templateVars);
   } else {
     res.redirect("/login");
@@ -108,7 +71,7 @@ app.post("/register",(req,res) => {
   if (req.body.email === "" || req.body.password === ""){
     return res.status(400).send("Empty Input, Discontinued registration");
   }
-  if (getUserByEmail(req.body.email) !== null) {
+  if (getUserByEmail(req.body.email,users) !== null) {
     return res.status(400).send("Email already exists").redirect("/urls");
   }
 
@@ -183,7 +146,7 @@ app.post("/urls/:id/delete",(req, res) => {
   if (!Object.keys(urlDatabase).includes(req.params.id)) {
     return res.send(`${req.params.id} short url does not exists!`)
   }
-  if (!urlsForUser(req.session['user_id'].includes(req.params.id))) {
+  if (!urlsForUser(req.session['user_id'].includes(req.params.id),urlDatabase)) {
     return res.send("User does not own the short url");
   }
   const urlId = req.params.id;
@@ -202,10 +165,11 @@ app.post("/urls/:id", (req, res) => {
   // //checks if the short url exists and if the user own them.
   // if (!Object.keys(urlDatabase).includes(req.params.id)) {
   //   return res.send(`${req.params.id} short url does not exists!`)
+  // // }
+
+  // if (!urlsForUser(req.session['user_id'].includes(req.params.id))) {
+  //   return res.send("User does not own the short url");
   // }
-  if (!urlsForUser(req.session['user_id'].includes(req.params.id))) {
-    return res.send("User does not own the short url");
-  }
   
 
 
@@ -225,7 +189,7 @@ app.get("/login", (req,res)=> {
 
   if (!req.session.user_id) {
     console.log("user_id found");
-    templateVars = {urls : urlsForUser(loggedUserID), user_id : req.session.user_id, userslist : users};
+    templateVars = {urls : urlsForUser(loggedUserID,urlDatabase), user_id : req.session.user_id, userslist : users};
     res.render("user_login",templateVars);
     
   } else {
@@ -239,7 +203,7 @@ app.get("/login", (req,res)=> {
 //Directs from the login button, creates value for user_id (before it was username)
 app.post("/login",(req,res) => {
 
-  let checkUser = getUserByEmail(req.body.email)
+  let checkUser = getUserByEmail(req.body.email,users)
   
   console.log("user info is",checkUser)
   if (checkUser === null){
