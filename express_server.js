@@ -48,7 +48,7 @@ app.get("/urls", (req,res)=> {
 
 app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
-    res.redirect("/login");
+    return res.redirect("/login");
   }
   res.render("urls_new");
 });
@@ -109,7 +109,8 @@ app.get("/urls/:id", (req, res) => {
   console.log("reqparaism ", req.params.id);
   console.log(Object.keys(urlDatabase));
   console.log(req.params.id in Object.keys(urlDatabase));
-  if (req.params.id in Object.keys(urlDatabase) === false){
+  //check if short url exist........
+  if (req.params.id in urlDatabase === false){
     return res.send("Short url does not exists");
   }
   console.log(req.session.user_id);
@@ -127,9 +128,10 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/u/:id",(req, res) => {
 
+  //tried to !req.params.id in urlDatabase) didnt work.
   if (!Object.keys(urlDatabase).includes(req.params.id)){
-
-    res.send(`${req.params.id} does not exists ${Object.keys(urlDatabase)}`);
+    console.log("doesnt exist")
+    res.send(`${req.params.id} does not exists`);
   }
 
   const longURL = urlDatabase[req.params.id].longURL;
