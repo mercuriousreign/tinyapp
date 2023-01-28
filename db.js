@@ -1,4 +1,4 @@
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs");
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -12,15 +12,16 @@ const urlDatabase = {
 
 
 const users = {
-  userRandomID : {
-    id:"userrandomid",
-    email:"user@email.com",
-    password:"remotebranch"},
-    aJ48lW : {
-      id: "aJ48lW",
-      email : "sam@jetstream",
-      password : bcrypt.hashSync("pie",10)
-    }
-}
+  userRandomID: {
+    id: "userrandomid",
+    email: "user@email.com",
+    password: "remotebranch"
+  },
+  aJ48lW: {
+    id: "aJ48lW",
+    email: "sam@jetstream",
+    password: bcrypt.hashSync("pie", 10)
+  }
+};
 
-module.exports = {urlDatabase,users};
+module.exports = { urlDatabase, users };
