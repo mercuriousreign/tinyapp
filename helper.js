@@ -2,7 +2,7 @@
 const getUserByEmail = function(checkEmail,users){
   for (let usr in users) {
     if (users[usr].email === checkEmail) {
-      return users[usr];
+      return usr;
     }
   }
   return null;
@@ -11,7 +11,7 @@ const getUserByEmail = function(checkEmail,users){
 
 const generateRandomString = function () {
   let result = [];
-  let charas = "abcdefghijklmnopqrstuvwxyz0123456789"
+  let charas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
   for (let i = 0 ; i < 6; i++) {
     let rand = Math.floor(Math.random() * (charas.length - 1) + 1);
     result.push(charas[rand]);
