@@ -1,7 +1,7 @@
 const express = require("express");
 const morgan = require('morgan');
 const cookieSession = require("cookie-session");
-const { urlDatabase, users } = require('./db');
+const { urlDatabase, users } = require('./database/db');
 const { generateRandomString, getUserByEmail, urlsForUser } = require('./helper_functions/helper');
 const bcrypt = require("bcryptjs");
 const app = express();
