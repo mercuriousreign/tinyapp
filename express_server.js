@@ -1,5 +1,4 @@
 const express = require("express");
-const morgan = require('morgan');
 const cookieSession = require("cookie-session");
 const { urlDatabase, users } = require('./database/db');
 const { generateRandomString, getUserByEmail, urlsForUser } = require('./helper_functions/helper');
@@ -14,20 +13,18 @@ app.use(cookieSession({
   name: 'session',
   keys: ['user_id']
 }));
-app.use(morgan('tiny'));
 
+//First entry, either redirects to login or the urls list based on if a user is logged in
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  let loggedUserID = req.session.user_id;
+  if (!loggedUserID){
+    return res.redirect("/login");
+  }
+
+  res.redirect("/urls");
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+//Page that list urls owned by logged user
 app.get("/urls", (req, res) => {
   let loggedUserID = req.session.user_id;
 
@@ -42,6 +39,7 @@ app.get("/urls", (req, res) => {
 
 });
 
+//Page that allows creation for new short url
 app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
     return res.redirect("/login");
@@ -49,6 +47,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+//Page that allows registration for new user
 app.get("/register", (req, res) => {
   
   if ('user_id' in req.session) {
@@ -85,7 +84,7 @@ app.post("/register", (req, res) => {
 app.post("/urls", (req, res) => {
   let loggedUserID = req.session.user_id;
   if (!loggedUserID) {
-    res.send("Please login to shorten url");
+    res.send(`Please login to shorten url <a href="/login">here</a>`);
   }
 
   let newShort = generateRandomString();
@@ -105,7 +104,7 @@ app.get("/urls/:id", (req, res) => {
   }
 
   if (!loggedUserID) {
-    return res.send("Please login to access your specific url");
+    return res.send(`Please login to access your specific url <a href="/login">here</a>`);
   }
   
   if (urlDatabase[url].userID !== loggedUserID) {
@@ -135,7 +134,7 @@ app.post("/urls/:id/delete", (req, res) => {
   const urlID = req.params.id;
 
   if (!loggedUserID) {
-    return res.send("user is not logged in");
+    return res.send(`User is not logged in. Please login <a href="/login">here</a>`);
   }
 
   if (!(Object.keys(urlDatabase).includes(urlID))) {
@@ -151,27 +150,28 @@ app.post("/urls/:id/delete", (req, res) => {
 
 });
 
-//update urls after receiving Submit from the show url page.
+//Update urls to a new long url after receiving Submit from the show url page.
 app.post("/urls/:id", (req, res) => {
 
   let url = req.params.id;
   let loggedUserID = req.session.user_id;
+  
   if (!req.session.user_id) {
-    return res.send("user is not logged in");
+    
+    return res.send(`User is not logged in. Please login <a href="/login">here</a>`);
   }
   
-
-  if (!(url in urlsForUser(loggedUserID, users))) {
+  
+  if (!(url in urlsForUser(loggedUserID, urlDatabase))) {
     return res.send("User does not own the short url");
   }
-  // //checks if the short url exists and if the user own them.
+  //Checks if the short url exists and if the user own them.
   if (!Object.keys(urlDatabase).includes(url)) {
     return res.send(`${req.params.id} short url does not exists!`);
   }
 
 
   urlDatabase[url].longURL = req.body.longURL;
-  console.log(urlDatabase);
   res.redirect("/urls");
 });
 
@@ -181,10 +181,8 @@ app.get("/login", (req, res) => {
   let templateVars = { urls: urlDatabase, userslist: users };
 
   let loggedUserID = req.session.user_id;
-  console.log("value of logg",loggedUserID);
   //If user is already logged in
   if (req.session.user_id) {
-    console.log("logged in");
     return res.redirect("/urls");
   }
 
@@ -200,7 +198,6 @@ app.post("/login", (req, res) => {
 
   let inputPass = req.body.password;
   let checkUser = users[getUserByEmail(req.body.email, users)];
-  //let checkUser = getUserByEmail(req.body.email, users);
 
   if (!checkUser || !inputPass) {
     return res.status(403).send("No input given for either email or password");
@@ -216,12 +213,12 @@ app.post("/login", (req, res) => {
   }
 
   req.session.user_id = checkUser.id;
-  console.log(req.session);
   res.redirect("/urls");
 
 
 });
 
+//Logsout the user and clears cookie.
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/login");
