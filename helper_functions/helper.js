@@ -24,7 +24,6 @@ const urlsForUser = function (id,urlDatabase) {
   for (let url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
       result[url] = urlDatabase[url]
-      //Object.assign(result,urlDatabase[url]);
     }
   }
   return result;
