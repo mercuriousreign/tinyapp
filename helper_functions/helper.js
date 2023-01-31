@@ -1,4 +1,5 @@
 
+//Helper function that allows generation of id , fetch of user by email and fetch of urls owned by the user
 const getUserByEmail = function(checkEmail,users){
   for (let usr in users) {
     if (users[usr].email === checkEmail) {
